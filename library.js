@@ -1,6 +1,6 @@
 let libraryDisplayed = false;
 let newBookButton = document.querySelector("#new-book-button");
-let bookForm = document.querySelector("#book-form");
+let bookDialog = document.querySelector("#book-dialog");
 
 const myLibrary = [
     {author: "Natasha Lunn", title: "Conversations on Love", pages: 320},
@@ -60,6 +60,8 @@ function addBookToLibrary(author, title, pages) {
     document.querySelector("#author").value = "";
     document.querySelector("#title").value = "";
     document.querySelector("#pages").value = "";
+
+    bookDialog.close();
 };    
 
 document.querySelector("#book-form").addEventListener("submit", function(event) {   event.preventDefault();
@@ -72,11 +74,11 @@ document.querySelector("#book-form").addEventListener("submit", function(event) 
 });
 
 newBookButton.addEventListener("click", function() {
-    if (bookForm.style.display === "none" || bookForm.style.display === "") {
-        bookForm.style.display = "block";
-    } else {
-        bookForm.style.display = "none";
-    }
+   bookDialog.showModal();
+});
+
+document.querySelector("#closeDialogButton").addEventListener("click", function() {
+    bookDialog.close();
 });
 
 
