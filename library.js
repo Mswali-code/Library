@@ -4,7 +4,7 @@ class Book {
         this.author = author;
         this.pages = pages;
         this.read = read;
-    }
+    };
 };
 
 const myLibraryManager  = (function () {
@@ -41,12 +41,12 @@ const myLibraryManager  = (function () {
             library.push({ ...book });
         });
         uI.displayLibraryAsCards();
-    }
+    };
 
     function removeBook(index) {
         library.splice(index, 1);
         uI.displayLibraryAsCards();
-    }
+    };
 
     function getLibrary() {
         return [...library];
@@ -65,11 +65,11 @@ const bookActions = (function () {
         book.read = !book.read;
         readButton.textContent = book.read ? "Mark as not read" : "Mark as read";
         readStatusElement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
-    }
+    };
 
     function removeBook(index) {
         myLibraryManager.removeBook(index);
-    }
+    };
 
     return {
         toggleReadStatus,
@@ -102,7 +102,7 @@ const uI = (function () {
 
             const readStatusELement = document.createElement("div");
             readStatusELement.classList.add("book-details");
-            readStatusELement.textContent = "Read: No";
+            readStatusELement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
 
             const readButton = document.createElement("button");
             readButton.textContent = book.read ? "Mark as not read" : "Mark as read";
@@ -145,7 +145,8 @@ const form = (function () {
     const bookDialog = document.querySelector("#book-dialog");
     const confirmButton = document.querySelector("#book-form button[type='submit']");
     const cancelButton = document.querySelector("#closeDialogButton");
-    const newBookButton = document.querySelector("#new-book-button")
+    const newBookButton = document.querySelector("#new-book-button");
+    const errorMessageElement = document.querySelector("#error-message");
 
     confirmButton.addEventListener("click", function (event) {
         event.preventDefault();
@@ -154,10 +155,16 @@ const form = (function () {
         const pages = pagesInput.value;
         const read = readInput.checked;
 
-        myLibraryManager.addBookToLibrary(title, author, pages, read);
-        uI.displayLibraryAsCards();
-        resetForm();
-        bookDialog.close();
+        if (validateInputs(title, author, pages)) {
+            myLibraryManager.addBookToLibrary(title, author, pages, read);
+            uI.displayLibraryAsCards();
+            resetForm();
+            bookDialog.close();
+            errorMessageElement.textContent = "";  
+        } else {
+            errorMessageElement.textContent = "Please fill in all fields.";
+        };
+        
     });
 
     cancelButton.addEventListener("click", function () {
@@ -175,7 +182,11 @@ const form = (function () {
         authorInput.value = "";
         pagesInput.value = "";
         readInput.checked = false;
-    }
+    };
+
+    function validateInputs(title, author, pages) {
+        return title.trim() !== "" && author.trim() !== "" && pages.trim() !== "";
+    };
 
     return {
         resetForm,
