@@ -8,7 +8,7 @@ body {
 }
 
 .index-container {
-    background-image: url(../images&svg/books-shelf.jpg);
+    background-image: url(../imagesandsvg/books-shelf.jpg);
     background-size: cover;
     height: 90vh;
 }
