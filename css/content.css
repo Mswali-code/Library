@@ -1,0 +1,103 @@
+body {
+    height: 100vh;
+    padding: 0;
+    background-image: url("../images&svg/book-stack.jpg");
+    background-size: cover;
+    font-size: 1.2rem;
+    font-weight: 800;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.content-main {
+    height: 95vh;
+    display: flex;
+    gap: 1%;
+}
+
+.first-section {
+    display: flex;
+    flex-direction: column;
+    background-color: #a65966;
+    padding: 0 2% 0 2%;
+}
+
+.home-container {
+    border-radius: 10px;
+    padding: 8px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.book-shelf-svg {
+    width: 50px;
+    height: 50px;
+}
+
+.home-link  {
+    color: white;
+}
+
+.add-reset-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly; 
+}
+
+#new-book-button,
+#reset-library-button {
+    border-radius: 10px;
+    padding: 8px;
+    background-color: #a65966;
+    color: white;
+}
+
+#new-book-button:hover,
+#reset-library-button:hover {
+    transition: transform 0.3s ease;
+    transform: scale(1.2);
+}
+
+.displayLibrary-class {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 5%;
+    flex: 1;
+    overflow-y: scroll;
+}
+
+.book-card {
+    border-radius: 20px;
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.4); 
+    background-color: #ffffff8a;
+    font-family: 'Ephesis', cursive;
+    padding: 10px;
+}
+
+.toggle-readmore-button,
+.edit-button,
+.remove-button,
+.changeReadStatusButton {
+    border-radius: 10px;
+    padding: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: .8rem;
+}
+
+.toggle-readmore-button:hover,
+.edit-button:hover,
+.remove-button:hover,
+.changeReadStatusButton:hover {
+    transition: transform 0.3s ease;
+    transform: scale(1.2);
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+.content-footer  {
+    text-align: center;
+    padding-top: 15px;
+    color: white;
+    background-color: #a35865;
+} 
