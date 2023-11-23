@@ -14,16 +14,9 @@ const myLibraryManager  = (function () {
         { title: "Crime and punishment", author: "Fyodor Dostoyevsky", pages: 576, read: false },
         { title: "Finished", author: "Jon Acuff", pages: 135, read: false },
         { title: "Maps of Meaning", author: "Jordan Peterson", pages: 562, read: false },
-        { title: "Feel the fear and do it anyways", author: "Susan Jeffers", pages: 214, read: false },
+        { title: "Feel the fear and do it anyways", author: "Susan Jeffers", pages: 214, read: false }, 
         { title: "Man's Search For Meaning", author: "Viktor E. Frankl", pages: 184, read: false },
-        { title: "We should all be millionares", author: "Rachel Rodgers", pages: 288, read: false },
-        { title: "The highly sensitive person", author: "Elaine N. Aron", pages: 251, read: false },
-        { title: "A woman's worth", author: "Marianne Williamson", pages: 288, read: false },
-        { title: "No bad parts Internal Family Systems", author: "Richard C. Schwartz", pages: 216, read: false },
-        { title: "Who dies?", author: "Stephen and Ondrea Levine", pages: 317, read: false },
-        { title: "Men Who Hate Women & The Women Who Love Them", author: "Dr. Susan Forward and Joan Torres", pages: 304, read: false },
-        { title: "Men Who Hate Women ", author: "Laura Bates", pages: 366, read: false },
-        { title: "Pride and Prejudice", author: "Jane Austen", pages: 496, read: false }
+        { title: "The highly sensitive person", author: "Elaine N. Aron", pages: 251, read: false }
     ];
 
     const library = initialLibrary.map(book => new Book(book.title, book.author, book.pages, book.read));
@@ -50,7 +43,7 @@ const myLibraryManager  = (function () {
 
     function getLibrary() {
         return [...library];
-    }
+    };
 
     return {
         addBookToLibrary,
@@ -67,13 +60,26 @@ const bookActions = (function () {
         readStatusElement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
     };
 
-    function removeBook(index) {
-        myLibraryManager.removeBook(index);
+    function toggleAdditionalInfo(additionalInfoElement, readMoreButton) {
+        if (additionalInfoElement.style.display === 'none') {
+            additionalInfoElement.style.display = 'block';
+            readMoreButton.textContent = "Read Less";
+        } else {
+            additionalInfoElement.style.display = 'none';
+            readMoreButton.textContent = "Read More";
+        }
+    };
+
+    function updateBookDetails(book, titleElement, authorElement, pagesElement) {
+        book.title = titleElement.querySelector("input").value;
+        book.author = authorElement.querySelector("input").value;
+        book.pages = pagesElement.querySelector("input").value;
     };
 
     return {
         toggleReadStatus,
-        removeBook,
+        toggleAdditionalInfo,
+        updateBookDetails
     };
 })();
 
@@ -81,12 +87,15 @@ const uI = (function () {
     const displayElement = document.querySelector("#display-book");
 
     function displayLibraryAsCards() {
-        displayElement.innerHTML = '';
+        displayElement.innerHTML = "";
         const library = myLibraryManager.getLibrary();
 
         library.forEach((book, index) => {
             const cardElement = document.createElement("div");
-            cardElement.classList.add("card");
+            cardElement.classList.add("book-card");
+
+            const bookInfoElement = document.createElement("div");
+            bookInfoElement.classList.add("book-info");
 
             const titleElement = document.createElement("div");
             titleElement.classList.add("book-title");
@@ -96,6 +105,10 @@ const uI = (function () {
             authorElement.classList.add("book-details");
             authorElement.textContent = `Author: ${book.author}`;
 
+            const additionalInfoElement = document.createElement("div");
+            additionalInfoElement.classList.add("additional-info");
+            additionalInfoElement.style.display = "none";
+
             const pagesElement = document.createElement("div");
             pagesElement.classList.add("book-details");
             pagesElement.textContent = `Pages: ${book.pages}`;
@@ -104,11 +117,46 @@ const uI = (function () {
             readStatusELement.classList.add("book-details");
             readStatusELement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
 
-            const readButton = document.createElement("button");
-            readButton.textContent = book.read ? "Mark as not read" : "Mark as read";
+            const changeReadStatusButton = document.createElement("button");
+            changeReadStatusButton.textContent = book.read ? "Mark as not read" : "Mark as read";
 
-            readButton.addEventListener("click", function () {
-                bookActions.toggleReadStatus(book, readButton, readStatusELement);
+            changeReadStatusButton.addEventListener("click", function () {
+                bookActions.toggleReadStatus(book, changeReadStatusButton, readStatusELement);
+            });
+
+            const readMoreButton = document.createElement("button");
+            readMoreButton.classList.add("toggle-readmore-button");
+            readMoreButton.textContent = "Read More";
+
+            readMoreButton.addEventListener("click", function () {
+                bookActions.toggleAdditionalInfo(additionalInfoElement, readMoreButton);
+            });
+
+            const editButton = document.createElement("button");
+            editButton.classList.add("edit-button");
+            editButton.textContent = "Edit";
+
+            editButton.addEventListener("click", function () {
+    
+                if (cardElement.querySelector(".save-button")) {
+                    return;
+                }
+
+                titleElement.innerHTML = `<input type="text" value="${book.title}">`;
+                authorElement.innerHTML = `<input type="text" value="${book.author}">`;
+                pagesElement.innerHTML = `<input type="number" value="${book.pages}">`;
+
+                const saveButton = document.createElement("button");
+                saveButton.textContent = "Save";
+                saveButton.classList.add("save-button");
+
+                saveButton.addEventListener("click", function () {
+                   
+                    bookActions.updateBookDetails(book, titleElement, authorElement, pagesElement);
+                    uI.displayLibraryAsCards(book);
+                });
+
+                cardElement.appendChild(saveButton);
             });
 
             const removeButton = document.createElement("button");
@@ -117,20 +165,33 @@ const uI = (function () {
             removeButton.setAttribute("data-index", index);
 
             removeButton.addEventListener("click", function () {
-                bookActions.removeBook(index);
+                myLibraryManager.removeBook(index);
                 displayLibraryAsCards();
             });
 
-            cardElement.appendChild(titleElement);
-            cardElement.appendChild(authorElement);
-            cardElement.appendChild(pagesElement);
-            cardElement.appendChild(readStatusELement);
-            cardElement.appendChild(readButton);
+            additionalInfoElement.appendChild(pagesElement);
+            additionalInfoElement.appendChild(readStatusELement);
+            additionalInfoElement.appendChild(changeReadStatusButton);
+
+            bookInfoElement.appendChild(titleElement);
+            bookInfoElement.appendChild(authorElement);
+            bookInfoElement.appendChild(additionalInfoElement);
+
+            cardElement.appendChild(bookInfoElement);
+            cardElement.appendChild(readMoreButton);
+            cardElement.appendChild(editButton);
             cardElement.appendChild(removeButton);
 
             displayElement.appendChild(cardElement);
         });
-    }
+    };
+
+    const resetButton = document.querySelector("#reset-library-button");
+
+    resetButton.addEventListener("click", function () {
+        myLibraryManager.resetLibrary();
+        displayLibraryAsCards();
+    });
 
     return {
         displayLibraryAsCards,
@@ -191,15 +252,6 @@ const form = (function () {
     return {
         resetForm,
     };
-})();
-
-const reset = (function () {
-    const resetButton = document.querySelector("#reset-library-button");
-
-    resetButton.addEventListener("click", function () {
-        myLibraryManager.resetLibrary();
-        uI.displayLibraryAsCards();
-    });
 })();
 
 uI.displayLibraryAsCards();
