@@ -13,17 +13,22 @@
 </head>
 <body>
 
-    <main class="content-main">
+    <main class="main">
         <section class="first-section">
 
             <div class="home-container">
                 <img src="imagesandsvg/bookshelf.svg" alt="books-shelf svg" class="book-shelf-svg">
-                <a href="index.html" class="home-link"> Back</a>
+                <a href="index.html" class="home-link">Back</a>
             </div>
             
-            <div class="add-reset-container">
+            <div class="buttons-container">
+
+                <div class="booksread-count-div">
+                    <div id="booksread-count">Books read: 0</div>
+                </div>
+
                 <div class="new-book-div">
-                    <button id="new-book-button">Add New book</button>
+                    <button id="new-book-button"> + Add book</button>
                 </div>
 
                 <dialog id="book-dialog">
@@ -48,14 +53,22 @@
                 <div class="reset-button-div">
                     <button id="reset-library-button">Reset books</button>
                 </div>
+
+                <div class="clear-library-div">
+                    <button id="clear-library-button">Clear books</button>
+                </div>
+                
             </div>
 
         </section>
 
-        <section id="display-book" class="displayLibrary-class"></section>
+        <section class="second-section">
+            <div id="display-book" class="displayLibrary-class"></div>
+        </section>
+
     </main>
 
-    <footer class="content-footer">
+    <footer class="footer">
         <p> &copy; 2023 Mswali-code! | Github</p>
     </footer> 
 
