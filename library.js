@@ -8,56 +8,76 @@ class Book {
 };
 
 const myLibraryManager  = (function () {
-
-    const initialLibrary = [
+    const demoBooks = [
         { title: "Conversations on Love", author: "Natasha Lunn", pages: 320, read: false },
-        { title: "Crime and punishment", author: "Fyodor Dostoyevsky", pages: 576, read: false },
-        { title: "Finished", author: "Jon Acuff", pages: 135, read: false },
-        { title: "Maps of Meaning", author: "Jordan Peterson", pages: 562, read: false },
-        { title: "Feel the fear and do it anyways", author: "Susan Jeffers", pages: 214, read: false }, 
-        { title: "Man's Search For Meaning", author: "Viktor E. Frankl", pages: 184, read: false },
-        { title: "The highly sensitive person", author: "Elaine N. Aron", pages: 251, read: false }
+        { title: "Crime and punishment", author: "Fyodor Dostoyevsky", pages: 576, read: false }
     ];
 
-    const library = initialLibrary.map(book => new Book(book.title, book.author, book.pages, book.read));
+    const storedLibrary = JSON.parse(localStorage.getItem("userLibrary"));
+    const userLibrary = storedLibrary || demoBooks.map(book => new Book(book.title, book.author, book.pages, book.read));
+
+    function saveLibraryToLocalStorage() {
+        localStorage.setItem("userLibrary", JSON.stringify(userLibrary));
+    };
 
     function addBookToLibrary(title, author, pages, read) {
         const newBook = new Book(title, author, pages, read);
-        library.push(newBook);
+        userLibrary.push(newBook);
         uI.displayLibraryAsCards();
         form.resetForm();
+        saveLibraryToLocalStorage();
     };
 
-    function resetLibrary() {
-        library.length = 0;
-        initialLibrary.forEach(book => {
-            library.push({ ...book });
-        });
-        uI.displayLibraryAsCards();
-    };
-
-    function removeBook(index) {
-        library.splice(index, 1);
-        uI.displayLibraryAsCards();
+    function getDemoBooks() {
+        return [...demoBooks];
     };
 
     function getLibrary() {
-        return [...library];
+        return [...userLibrary];
+    };
+
+    function removeBook(index) {
+        userLibrary.splice(index, 1);
+        uI.displayLibraryAsCards();
+        saveLibraryToLocalStorage();
+    };
+
+    function resetLibrary() {
+        userLibrary.length = 0;
+        demoBooks.forEach(book => {
+            userLibrary.push(new Book(book.title, book.author, book.pages, book.read));
+        });
+        uI.displayLibraryAsCards();
+        saveLibraryToLocalStorage();
+
+    };
+
+    function clearLibrary() {
+        userLibrary.length = 0; 
+        uI.displayLibraryAsCards(); 
+        saveLibraryToLocalStorage(); 
     };
 
     return {
         addBookToLibrary,
-        resetLibrary,
-        removeBook,
+        getDemoBooks,
         getLibrary,
+        removeBook,
+        resetLibrary,
+        clearLibrary
     };
 })();
 
 const bookActions = (function () {
     function toggleReadStatus(book, readButton, readStatusElement) {
+        const wasRead = book.read;
         book.read = !book.read;
         readButton.textContent = book.read ? "Mark as not read" : "Mark as read";
         readStatusElement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
+
+        if (wasRead !== book.read && book.read) {
+            uI.updateReadCount();
+        }
     };
 
     function toggleAdditionalInfo(additionalInfoElement, readMoreButton) {
@@ -85,6 +105,8 @@ const bookActions = (function () {
 
 const uI = (function () {
     const displayElement = document.querySelector("#display-book");
+    const resetButton = document.querySelector("#reset-library-button");
+    const clearButton = document.querySelector("#clear-library-button");
 
     function displayLibraryAsCards() {
         displayElement.innerHTML = "";
@@ -118,11 +140,13 @@ const uI = (function () {
             readStatusELement.textContent = `Read: ${book.read ? "Yes" : "No"}`;
 
             const changeReadStatusButton = document.createElement("button");
+            changeReadStatusButton.classList.add("changeReadStatusButton");
             changeReadStatusButton.textContent = book.read ? "Mark as not read" : "Mark as read";
 
             changeReadStatusButton.addEventListener("click", function () {
                 bookActions.toggleReadStatus(book, changeReadStatusButton, readStatusELement);
-            });
+                uI.updateReadCount();
+            })
 
             const readMoreButton = document.createElement("button");
             readMoreButton.classList.add("toggle-readmore-button");
@@ -167,6 +191,7 @@ const uI = (function () {
             removeButton.addEventListener("click", function () {
                 myLibraryManager.removeBook(index);
                 displayLibraryAsCards();
+                updateReadCount(); 
             });
 
             additionalInfoElement.appendChild(pagesElement);
@@ -186,15 +211,25 @@ const uI = (function () {
         });
     };
 
-    const resetButton = document.querySelector("#reset-library-button");
-
     resetButton.addEventListener("click", function () {
         myLibraryManager.resetLibrary();
-        displayLibraryAsCards();
+        updateReadCount(); 
     });
+
+    clearButton.addEventListener("click", function () {
+        myLibraryManager.clearLibrary();
+        updateReadCount(); 
+    });
+
+    function updateReadCount () {
+        const readBooks = myLibraryManager.getLibrary().filter(book => book.read).length;
+        const booksReadCountElement = document.querySelector("#booksread-count");
+        booksReadCountElement.textContent = `Books read: ${readBooks}`;
+    };
 
     return {
         displayLibraryAsCards,
+        updateReadCount
     };
 })();
 
@@ -211,14 +246,32 @@ const form = (function () {
 
     confirmButton.addEventListener("click", function (event) {
         event.preventDefault();
-        const title = titleInput.value;
+        const title = titleInput.value.toLowerCase(); 
         const author = authorInput.value;
         const pages = pagesInput.value;
         const read = readInput.checked;
 
-        if (validateInputs(title, author, pages)) {
+        const existingBook = myLibraryManager.getLibrary().find(book => book.title.toLowerCase() === title) ||
+        myLibraryManager.getDemoBooks().find(book => book.title.toLowerCase() === title);
+
+        if (existingBook) {
+            errorMessageElement.textContent = "A book with the same title already exists!";
+        } else if (validateInputs(title, author, pages)) {
             myLibraryManager.addBookToLibrary(title, author, pages, read);
             uI.displayLibraryAsCards();
+            uI.updateReadCount();
+            resetForm();
+            bookDialog.close();
+            errorMessageElement.textContent = "";
+        } else {
+            errorMessageElement.textContent = "Please fill in all fields.";
+        }
+    });
+
+       /*  if (validateInputs(title, author, pages)) {
+            myLibraryManager.addBookToLibrary(title, author, pages, read);
+            uI.displayLibraryAsCards();
+            uI.updateReadCount();
             resetForm();
             bookDialog.close();
             errorMessageElement.textContent = "";  
@@ -226,7 +279,7 @@ const form = (function () {
             errorMessageElement.textContent = "Please fill in all fields.";
         };
         
-    });
+    }); */
 
     cancelButton.addEventListener("click", function () {
         resetForm();
